@@ -92,6 +92,7 @@ typedef struct {
     char *local_program_path;   /* absolute path to program on local node   */
     char *remote_program_path;  /* absolute path to program on remote nodes */
     bool reverse_copy;          /* rpdcp: reverse copy */
+    char *password;		/* password */
 } opt_t;
 
 

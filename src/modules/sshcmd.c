@@ -91,6 +91,8 @@ static int sshcmd_args_init (void);
 static int fixup_ssh_args (List ssh_args_list, int need_user);
 
 List ssh_args_list =     NULL;
+char *SSH_CMD = "ssh";
+char extra_buf[512];
 
 /*
  *  Export generic pdsh module operations:
@@ -147,11 +149,15 @@ static char **ssh_argv_create (List arg_list, const char **remote_argv)
     for (p = remote_argv; *p; p++)
         n++;
 
-    n += list_count (arg_list) + 2;
+    n += list_count (arg_list) + 4;
     argv = (char **) Malloc (n * sizeof (char *));
     memset (argv, 0, n);
 
     n = 0;
+    if (strlen(extra_buf)) {
+    	argv[n++] = Strdup(extra_buf);
+    	argv[n++] = Strdup("ssh");
+    }
     i = list_iterator_create (arg_list);
     while ((arg = list_next (i))) 
         argv[n++] = Strdup (arg);
@@ -196,6 +202,11 @@ static int mod_ssh_postop(opt_t *opt)
      */
     if (opt->dshpath)
         list_append (ssh_args_list, Strdup (opt->dshpath));
+
+    if (opt->password) {
+	snprintf(extra_buf, 512, "-p%s", opt->password);
+	SSH_CMD = "sshpass";
+    }
 
     return 0;
 }
@@ -297,7 +308,7 @@ sshcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
 
     list_destroy (args_list);
 
-    if (!(p = pipecmd ("ssh", (const char **) ssh_args, ahost, ruser, rank)))
+    if (!(p = pipecmd (SSH_CMD, (const char **) ssh_args, ahost, ruser, rank)))
         goto out;
 
     if (fd2p)

@@ -106,6 +106,7 @@ Usage: rpdcp [-options] src [src2...] dir\n\
 -x host,host,...  set node exclusion list on command line\n\
 -R name           set rcmd module to name\n\
 -M name,...       select one or more misc modules to initialize first\n\
+-P password       Provide password as argument (security unwise)\n\
 -N                disable hostname: labels on output lines\n\
 -L                list info on all loaded modules and exit\n"
 /* undocumented "-T testcase" option */
@@ -118,7 +119,7 @@ Usage: rpdcp [-options] src [src2...] dir\n\
 #define DSH_ARGS    "S"
 #endif
 #define PCP_ARGS	"pryzZe:"
-#define GEN_ARGS	"hLNKR:M:t:cqf:w:x:l:u:bI:dVT:Q"
+#define GEN_ARGS	"hLNKR:M:t:cqf:w:x:l:u:bI:dVT:QP:"
 
 
 /*
@@ -418,6 +419,7 @@ void opt_default(opt_t * opt, char *argv0)
     opt->target_is_directory = false;
     opt->pcp_client = false;
     opt->pcp_client_host = NULL;
+    opt->password = NULL;
 
     return;
 }
@@ -578,6 +580,9 @@ void opt_args(opt_t * opt, int argc, char *argv[])
         case 'R': 
             opt->rcmd_name = Strdup(optarg);
             break;
+	case 'P':
+	    opt->password = Strdup(optarg);
+	    break;
         case 'S':              /* get remote command status */
             opt->ret_remote_rc = true;
             break;
@@ -1042,6 +1047,8 @@ void opt_free(opt_t * opt)
         Free((void **) &opt->luser);
     if (opt->ruser)
         Free((void **) &opt->ruser);
+    if (opt->password)
+	Free((void **) &opt->password); 
 
     rcmd_exit();
 }
